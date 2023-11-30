@@ -30,9 +30,10 @@ python_version = "3.8"
 strict = true
 
 [[tool.mypy.overrides]]
-module = "sqlalchemy_adapter.tests.*"
+module = "tests.*"
 ignore_missing_imports = true
 check_untyped_defs = true
+disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 addopts = ["--strict-config", "--strict-markers"]
