@@ -4,7 +4,7 @@
 
 <!-- markdownlint-disable MD033 -->
 
-**Source Code**: <a href="https://github.com/javalce/sqlalchemy-adapter" target="_blank">https://github.com/javalce/sqlalchemy-adapter</a>
+**Source Code**: [https://github.com/javalce/sqlalchemy-adapter](https://github.com/javalce/sqlalchemy-adapter)
 
 ---
 
