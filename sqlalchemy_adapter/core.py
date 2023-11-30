@@ -1,61 +1,31 @@
-import abc
-from typing import Any, ContextManager, Dict, Union
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Any, Dict, Iterator, Union
 
-from sqlalchemy import URL, Engine, create_engine, make_url
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from .context import get_session, session_ctx
+from .abstract_database import AbstractDatabase
 from .exception import DBURLNotInitializedError, SessionNotInitializedError
 
+_session: ContextVar[Union[Session, None]] = ContextVar("_session", default=None)
 
-class AbstractDatabase(abc.ABC):
-    def __init__(
-        self,
-        url: Union[str, None] = None,
-        engine_options: Union[Dict[str, Any], None] = None,
-        session_options: Union[Dict[str, Any], None] = None,
-    ) -> None:
-        self.db_url: Union[URL, None] = None
-        self.engine_options = engine_options or {}
-        self.session_options = session_options or {}
-        self.engine: Union[Engine, None] = None
-        self.session_factory: Union[sessionmaker[Session], None] = None
 
-        if url is not None:
-            self.initialize(url, engine_options)
-
-    def initialize(
-        self,
-        url: str,
-        engine_options: Union[Dict[str, Any], None] = None,
-        session_options: Union[Dict[str, Any], None] = None,
-    ) -> None:
-        """Initialize the database instance.
-
-        :param url: the database URL.
-        :param engine_options: a dictionary with additional engine options to pass to SQLAlchemy.
-        :param session_options: a dictionary with additional session options to use when creating a new session.
-
-        This method must be called explicitly to complete the database initialization of the instance if the two-phase initialization method is used.
-        """
-        self.db_url = make_url(url)
-        self.engine_options = engine_options or self.engine_options
-        self.session_options = session_options or self.session_options
-
-    def create_engine(self) -> None:
-        """Create the SQLAlchemy engine."""
-        self.engine = self._create_engine()
-
-    @abc.abstractmethod
-    def _create_engine(self) -> Engine:
-        pass
-
-    def is_async(self) -> bool:
-        """Return True if this database instance is asynchronous."""
-        return False
+def get_session() -> Session:
+    session = _session.get()
+    if session is None:
+        raise SessionNotInitializedError
+    return session
 
 
 class Database(AbstractDatabase):
+    """Initialize the database instance.
+
+    :param url: the database URL.
+    :param engine_options: a dictionary with additional engine options to pass to SQLAlchemy.
+    :param session_options: a dictionary with additional session options to use when creating a new session.
+    """
+
     def __init__(
         self,
         url: Union[str, None] = None,
@@ -84,10 +54,14 @@ class Database(AbstractDatabase):
         """Return a new session."""
         return get_session()
 
-    def session_ctx(self) -> ContextManager[Session]:
+    @contextmanager
+    def session_ctx(self) -> Iterator[Session]:
         """Return a context manager that yields a new session."""
         try:
             assert self.session_factory is not None
-            return session_ctx(self.session_factory)
+            with self.session_factory() as session:
+                token = _session.set(session)
+                yield session
+                _session.reset(token)
         except Exception as e:
             raise SessionNotInitializedError from e

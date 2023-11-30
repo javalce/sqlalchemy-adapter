@@ -57,7 +57,8 @@ def test_session_not_initialized_error():
 def test_session_ctx_sesssion_not_initialized_error():
     db = Database()
     with pytest.raises(SessionNotInitializedError) as excinfo:
-        db.session_ctx()
+        with db.session_ctx():
+            pass
     assert "Session not initialized" in str(excinfo.value)
 
 
