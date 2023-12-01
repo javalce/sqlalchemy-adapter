@@ -73,6 +73,6 @@ class Database(AbstractDatabase):
             with self.session_factory() as session:
                 token = _session.set(session)
                 yield session
-                _session.reset(token)
+            _session.reset(token)
         except Exception as e:
             raise SessionNotInitializedError from e

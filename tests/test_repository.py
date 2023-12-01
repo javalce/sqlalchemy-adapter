@@ -7,13 +7,31 @@ from sqlalchemy_adapter.model import Model
 from sqlalchemy_adapter.repository import BaseRepository
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
+def MockModel():
+    class MockModel(Model):
+        __tablename__ = "mock_model"
+
+        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    return MockModel
+
+
+@pytest.fixture
+def repository(MockModel):
+    class MockRepository(BaseRepository[MockModel, int]):  # type: ignore
+        model_class = MockModel
+
+    return MockRepository()
+
+
+@pytest.fixture
 def db():
     return Database("sqlite:///:memory:")
 
 
-@pytest.fixture(scope="function")
-def init_db_tables(db):
+@pytest.fixture(autouse=True)
+def init_db_tables(db, MockModel):
     with db.session_ctx():
         Model.metadata.create_all(db.get_engine())
     yield
@@ -23,23 +41,12 @@ def init_db_tables(db):
     clear_mappers()
 
 
-@pytest.mark.usefixtures("init_db_tables")
-def test_repository_find_all(db):
-    class MockModel(Model):
-        __tablename__ = "mock_model"
-
-        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    class MockRepository(BaseRepository[MockModel, int]):
-        model_class = MockModel
-
+def test_repository_find_all(db, MockModel, repository):
     with db.session_ctx() as session:
         session.add(MockModel(id=1))
         session.add(MockModel(id=2))
         session.add(MockModel(id=3))
         session.commit()
-
-    repository = MockRepository()
 
     with db.session_ctx():
         result = repository.find_all()
@@ -48,21 +55,11 @@ def test_repository_find_all(db):
     assert len(result) == 3
 
 
-@pytest.mark.usefixtures("init_db_tables")
-def test_repository_find_by_id(db):
-    class MockModel(Model):
-        __tablename__ = "mock_model"
-
-        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    class MockRepository(BaseRepository[MockModel, int]):
-        model_class = MockModel
-
+def test_repository_find_by_id(db, MockModel, repository):
     with db.session_ctx() as session:
         session.add(MockModel(id=1))
         session.commit()
 
-    repository = MockRepository()
     model_id = 1
 
     with db.session_ctx():
@@ -72,18 +69,7 @@ def test_repository_find_by_id(db):
     assert result.id == model_id
 
 
-@pytest.mark.usefixtures("init_db_tables")
-def test_repository_find_by_id_not_found(db):
-    class MockModel(Model):
-        __tablename__ = "mock_model"
-
-        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    class MockRepository(BaseRepository[MockModel, int]):
-        model_class = MockModel
-
-    repository = MockRepository()
-
+def test_repository_find_by_id_not_found(db, MockModel, repository):
     model_id = 2
     with db.session_ctx():
         result = repository.find_by_id(model_id)
@@ -91,17 +77,7 @@ def test_repository_find_by_id_not_found(db):
     assert result is None
 
 
-@pytest.mark.usefixtures("init_db_tables")
-def test_repository_save(db):
-    class MockModel(Model):
-        __tablename__ = "mock_model"
-
-        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    class MockRepository(BaseRepository[MockModel, int]):
-        model_class = MockModel
-
-    repository = MockRepository()
+def test_repository_save(db, MockModel, repository):
     model = MockModel()
 
     with db.session_ctx():
@@ -111,17 +87,7 @@ def test_repository_save(db):
     assert result.id == 1
 
 
-@pytest.mark.usefixtures("init_db_tables")
-def test_repository_save_all(db):
-    class MockModel(Model):
-        __tablename__ = "mock_model"
-
-        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    class MockRepository(BaseRepository[MockModel, int]):
-        model_class = MockModel
-
-    repository = MockRepository()
+def test_repository_save_all(db, MockModel, repository):
     models = [MockModel(), MockModel(), MockModel()]
 
     with db.session_ctx():
@@ -134,17 +100,7 @@ def test_repository_save_all(db):
     assert result[2].id == 3
 
 
-@pytest.mark.usefixtures("init_db_tables")
-def test_repository_update_model(db):
-    class MockModel(Model):
-        __tablename__ = "mock_model"
-
-        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    class MockRepository(BaseRepository[MockModel, int]):
-        model_class = MockModel
-
-    repository = MockRepository()
+def test_repository_update_model(db, MockModel, repository):
     model = MockModel()
     with db.session_ctx():
         repository.save(model)
@@ -154,17 +110,7 @@ def test_repository_update_model(db):
     assert result.id == 2
 
 
-@pytest.mark.usefixtures("init_db_tables")
-def test_repository_delete(db):
-    class MockModel(Model):
-        __tablename__ = "mock_model"
-
-        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    class MockRepository(BaseRepository[MockModel, int]):
-        model_class = MockModel
-
-    repository = MockRepository()
+def test_repository_delete(db, MockModel, repository):
     model = MockModel()
     with db.session_ctx():
         repository.save(model)
@@ -175,17 +121,7 @@ def test_repository_delete(db):
     assert result is None
 
 
-@pytest.mark.usefixtures("init_db_tables")
-def test_repository_delete_by_id(db):
-    class MockModel(Model):
-        __tablename__ = "mock_model"
-
-        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    class MockRepository(BaseRepository[MockModel, int]):
-        model_class = MockModel
-
-    repository = MockRepository()
+def test_repository_delete_by_id(db, MockModel, repository):
     model = MockModel()
     with db.session_ctx():
         repository.save(model)
@@ -196,17 +132,7 @@ def test_repository_delete_by_id(db):
     assert result is None
 
 
-@pytest.mark.usefixtures("init_db_tables")
-def test_repository_delete_by_id_not_found(db):
-    class MockModel(Model):
-        __tablename__ = "mock_model"
-
-        id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
-    class MockRepository(BaseRepository[MockModel, int]):
-        model_class = MockModel
-
-    repository = MockRepository()
+def test_repository_delete_by_id_not_found(db, MockModel, repository):
     model_id = 2
     with db.session_ctx():
         repository.delete_by_id(model_id)

@@ -1,7 +1,15 @@
+import pytest
 from sqlalchemy import Integer
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, clear_mappers, mapped_column
 
 from sqlalchemy_adapter.model import Model
+
+
+@pytest.fixture(autouse=True)
+def teardown_function():
+    yield
+    Model.metadata.clear()
+    clear_mappers()
 
 
 def test_model_default_tablename():
@@ -10,8 +18,6 @@ def test_model_default_tablename():
 
     assert issubclass(TestModel, DeclarativeBase)
     assert getattr(TestModel, "__tablename__", None) == "test_model"
-
-    Model.metadata.clear()
 
 
 def test_model_tablename_custom():
@@ -22,5 +28,3 @@ def test_model_tablename_custom():
 
     assert issubclass(TestModel, DeclarativeBase)
     assert getattr(TestModel, "__tablename__", None) == "test"
-
-    Model.metadata.clear()
