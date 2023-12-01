@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from .abstract_database import AbstractDatabase
 from .exception import DBURLNotInitializedError, SessionNotInitializedError
+from .model import Model
 
 _session: ContextVar[Union[Session, None]] = ContextVar("_session", default=None)
 
@@ -48,6 +49,16 @@ class Database(AbstractDatabase):
         if self.db_url is None:
             raise DBURLNotInitializedError
         return create_engine(self.db_url, **self.engine_options)
+
+    def create_all(self) -> None:
+        """Create all tables."""
+        engine = self.get_engine()
+        Model.metadata.create_all(engine)
+
+    def drop_all(self) -> None:
+        """Drop all tables."""
+        engine = self.get_engine()
+        Model.metadata.drop_all(engine)
 
     @property
     def session(self) -> Session:

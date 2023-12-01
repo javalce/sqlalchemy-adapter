@@ -5,18 +5,22 @@ from sqlalchemy_adapter.model import Model
 
 
 def test_model_default_tablename():
-    class TestModelWithoutTablename(Model):
+    class TestModel(Model):
         id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    assert issubclass(TestModelWithoutTablename, DeclarativeBase)
-    assert getattr(TestModelWithoutTablename, "__tablename__", None) == "test_model_without_tablename"
+    assert issubclass(TestModel, DeclarativeBase)
+    assert getattr(TestModel, "__tablename__", None) == "test_model"
+
+    Model.metadata.clear()
 
 
 def test_model_tablename_custom():
-    class TestModelWithTablename(Model):
+    class TestModel(Model):
         __tablename__ = "test"
 
         id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
-    assert issubclass(TestModelWithTablename, DeclarativeBase)
-    assert getattr(TestModelWithTablename, "__tablename__", None) == "test"
+    assert issubclass(TestModel, DeclarativeBase)
+    assert getattr(TestModel, "__tablename__", None) == "test"
+
+    Model.metadata.clear()
