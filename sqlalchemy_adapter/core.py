@@ -42,7 +42,7 @@ class Database(AbstractDatabase):
     ) -> None:
         super().initialize(url, engine_options, session_options)
         self.create_engine()
-        self.session_factory = sessionmaker(bind=self.engine, **self.session_options)
+        self.session_factory = sessionmaker(bind=self.get_engine(), **self.session_options)
 
     def _create_engine(self) -> Engine:
         if self.db_url is None:

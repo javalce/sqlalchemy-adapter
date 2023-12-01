@@ -6,3 +6,8 @@ class SessionNotInitializedError(Exception):
 class DBURLNotInitializedError(Exception):
     def __init__(self) -> None:
         super().__init__("Database URL not set")
+
+
+class EngineNotInitializedError(Exception):
+    def __init__(self) -> None:
+        super().__init__("Engine not initialized")

@@ -25,10 +25,10 @@ def db():
 @pytest.fixture(scope="function")
 def init_db(db: Database):  # type: ignore
     with db.session_ctx():
-        Model.metadata.create_all(db.engine)  # type: ignore
+        Model.metadata.create_all(db.get_engine())
     yield
     with db.session_ctx():
-        Model.metadata.drop_all(db.engine)  # type: ignore
+        Model.metadata.drop_all(db.get_engine())
 
 
 @pytest.mark.usefixtures("init_db")

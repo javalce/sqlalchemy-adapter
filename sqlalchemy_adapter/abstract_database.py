@@ -4,6 +4,8 @@ from typing import Any, Dict, Union
 from sqlalchemy import URL, Engine, make_url
 from sqlalchemy.orm import Session, sessionmaker
 
+from .exception import EngineNotInitializedError
+
 
 class AbstractDatabase(abc.ABC):
     def __init__(
@@ -47,6 +49,12 @@ class AbstractDatabase(abc.ABC):
     def _create_engine(self) -> Engine:
         """Create the SQLAlchemy engine."""
         pass
+
+    def get_engine(self) -> Engine:
+        """Return the SQLAlchemy engine."""
+        if self.engine is None:
+            raise EngineNotInitializedError
+        return self.engine
 
     def is_async(self) -> bool:
         """Return True if this database instance is asynchronous."""
