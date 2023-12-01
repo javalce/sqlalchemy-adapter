@@ -30,3 +30,10 @@ class Repository(Generic[T, K]):
         self.session.commit()
         self.session.refresh(model)
         return model
+
+    def save_all(self, models: List[T]) -> List[T]:
+        self.session.add_all(models)
+        self.session.commit()
+        for model in models:
+            self.session.refresh(model)
+        return models

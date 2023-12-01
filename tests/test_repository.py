@@ -85,3 +85,18 @@ def test_repository_save(db):
 
     assert isinstance(result, MockModel)
     assert result.id == 1
+
+
+@pytest.mark.usefixtures("init_db_tables")
+def test_repository_save_all(db):
+    repository = MockRepository()
+    models = [MockModel(), MockModel(), MockModel()]
+
+    with db.session_ctx():
+        result = repository.save_all(models)
+
+    assert isinstance(result, list)
+    assert len(result) == 3
+    assert result[0].id == 1
+    assert result[1].id == 2
+    assert result[2].id == 3
