@@ -10,7 +10,7 @@ from sqlalchemy_adapter.repository import Repository
 class MockModel(Model):
     __tablename__ = "mock_model"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
 
 class MockRepository(Repository[MockModel, int]):
@@ -23,7 +23,7 @@ def db():
 
 
 @pytest.fixture(scope="function")
-def init_db(db: Database):  # type: ignore
+def init_db_tables(db: Database):  # type: ignore
     with db.session_ctx():
         Model.metadata.create_all(db.get_engine())
     yield
@@ -31,7 +31,7 @@ def init_db(db: Database):  # type: ignore
         Model.metadata.drop_all(db.get_engine())
 
 
-@pytest.mark.usefixtures("init_db")
+@pytest.mark.usefixtures("init_db_tables")
 def test_repository_find_all(db):
     with db.session_ctx() as session:
         session.add(MockModel(id=1))
@@ -48,7 +48,7 @@ def test_repository_find_all(db):
     assert len(result) == 3
 
 
-@pytest.mark.usefixtures("init_db")
+@pytest.mark.usefixtures("init_db_tables")
 def test_repository_find_by_id(db):
     with db.session_ctx() as session:
         session.add(MockModel(id=1))
@@ -64,7 +64,7 @@ def test_repository_find_by_id(db):
     assert result.id == model_id
 
 
-@pytest.mark.usefixtures("init_db")
+@pytest.mark.usefixtures("init_db_tables")
 def test_repository_find_by_id_not_found(db):
     repository = MockRepository()
 
@@ -73,3 +73,15 @@ def test_repository_find_by_id_not_found(db):
         result = repository.find_by_id(model_id)
 
     assert result is None
+
+
+@pytest.mark.usefixtures("init_db_tables")
+def test_repository_save(db):
+    repository = MockRepository()
+    model = MockModel()
+
+    with db.session_ctx():
+        result = repository.save(model)
+
+    assert isinstance(result, MockModel)
+    assert result.id == 1

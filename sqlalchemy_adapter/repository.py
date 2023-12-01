@@ -24,3 +24,9 @@ class Repository(Generic[T, K]):
 
     def find_by_id(self, model_id: K) -> Union[T, None]:
         return self.session.get(self.model_class, model_id)
+
+    def save(self, model: T) -> T:
+        self.session.add(model)
+        self.session.commit()
+        self.session.refresh(model)
+        return model
