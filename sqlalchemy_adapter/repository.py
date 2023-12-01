@@ -1,4 +1,4 @@
-from typing import Generic, List, Type, TypeVar
+from typing import Generic, List, Type, TypeVar, Union
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -21,3 +21,6 @@ class Repository(Generic[T, K]):
         query = select(self.model_class)
         result = self.session.scalars(query).all()
         return list(result)
+
+    def find_by_id(self, model_id: K) -> Union[T, None]:
+        return self.session.get(self.model_class, model_id)

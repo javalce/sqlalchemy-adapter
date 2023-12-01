@@ -18,14 +18,17 @@ class MockRepository(Repository[MockModel, int]):
 
 
 @pytest.fixture(scope="module")
-def db() -> Database:
+def db():
     return Database("sqlite:///:memory:")
 
 
 @pytest.fixture(scope="function")
-def init_db(db: Database) -> None:
+def init_db(db: Database):  # type: ignore
     with db.session_ctx():
         Model.metadata.create_all(db.engine)  # type: ignore
+    yield
+    with db.session_ctx():
+        Model.metadata.drop_all(db.engine)  # type: ignore
 
 
 @pytest.mark.usefixtures("init_db")
@@ -43,3 +46,30 @@ def test_repository_find_all(db):
 
     assert isinstance(result, list)
     assert len(result) == 3
+
+
+@pytest.mark.usefixtures("init_db")
+def test_repository_find_by_id(db):
+    with db.session_ctx() as session:
+        session.add(MockModel(id=1))
+        session.commit()
+
+    repository = MockRepository()
+    model_id = 1
+
+    with db.session_ctx():
+        result = repository.find_by_id(model_id)
+
+    assert isinstance(result, MockModel)
+    assert result.id == model_id
+
+
+@pytest.mark.usefixtures("init_db")
+def test_repository_find_by_id_not_found(db):
+    repository = MockRepository()
+
+    model_id = 2
+    with db.session_ctx():
+        result = repository.find_by_id(model_id)
+
+    assert result is None
