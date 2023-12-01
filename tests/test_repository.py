@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from sqlalchemy_adapter.core import Database
 from sqlalchemy_adapter.model import Model
-from sqlalchemy_adapter.repository import Repository
+from sqlalchemy_adapter.repository import BaseRepository
 
 
 class MockModel(Model):
@@ -13,7 +13,7 @@ class MockModel(Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
 
-class MockRepository(Repository[MockModel, int]):
+class MockRepository(BaseRepository[MockModel, int]):
     model_class = MockModel
 
 
