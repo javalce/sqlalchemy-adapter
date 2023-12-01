@@ -100,3 +100,15 @@ def test_repository_save_all(db):
     assert result[0].id == 1
     assert result[1].id == 2
     assert result[2].id == 3
+
+
+@pytest.mark.usefixtures("init_db_tables")
+def test_repository_update_model(db):
+    repository = MockRepository()
+    model = MockModel()
+    with db.session_ctx():
+        repository.save(model)
+    model.id = 2
+    with db.session_ctx():
+        result = repository.save(model)
+    assert result.id == 2
