@@ -112,3 +112,40 @@ def test_repository_update_model(db):
     with db.session_ctx():
         result = repository.save(model)
     assert result.id == 2
+
+
+@pytest.mark.usefixtures("init_db_tables")
+def test_repository_delete(db):
+    repository = MockRepository()
+    model = MockModel()
+    with db.session_ctx():
+        repository.save(model)
+    with db.session_ctx():
+        repository.delete(model)
+    with db.session_ctx():
+        result = repository.find_by_id(model.id)
+    assert result is None
+
+
+@pytest.mark.usefixtures("init_db_tables")
+def test_repository_delete_by_id(db):
+    repository = MockRepository()
+    model = MockModel()
+    with db.session_ctx():
+        repository.save(model)
+    with db.session_ctx():
+        repository.delete_by_id(model.id)
+    with db.session_ctx():
+        result = repository.find_by_id(model.id)
+    assert result is None
+
+
+@pytest.mark.usefixtures("init_db_tables")
+def test_repository_delete_by_id_not_found(db):
+    repository = MockRepository()
+    model_id = 2
+    with db.session_ctx():
+        repository.delete_by_id(model_id)
+    with db.session_ctx():
+        result = repository.find_by_id(model_id)
+    assert result is None

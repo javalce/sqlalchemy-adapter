@@ -37,3 +37,13 @@ class Repository(Generic[T, K]):
         for model in models:
             self.session.refresh(model)
         return models
+
+    def delete(self, model: T) -> None:
+        self.session.delete(model)
+        self.session.commit()
+
+    def delete_by_id(self, model_id: K) -> None:
+        model = self.find_by_id(model_id)
+        if model:
+            self.delete(model)
+            self.session.commit()
