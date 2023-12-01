@@ -10,7 +10,7 @@ T = TypeVar("T", bound=Model)
 K = TypeVar("K")
 
 
-class Repository(Generic[T, K]):
+class BaseRepository(Generic[T, K]):
     model_class: Type[T]
 
     @property
