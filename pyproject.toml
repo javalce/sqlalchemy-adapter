@@ -9,14 +9,19 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.8"
 sqlalchemy = "^2.0"
+fastapi = { version = "*", optional = true }
 
 
 [tool.poetry.group.dev.dependencies]
 black = "23.11.0"
 mypy = "1.7.1"
-ruff = "0.1.6"
+ruff = "0.1.7"
 pytest = "7.4.3"
 coverage = "7.3.2"
+
+[tool.poetry.extras]
+all = ["fastapi"]
+fastapi = ["fastapi"]
 
 [build-system]
 requires = ["poetry-core"]
