@@ -1,6 +1,6 @@
 import pytest
 
-from sqlalchemy_adapter.core import Database
+from sqlalchemy_adapter.database import Database
 from sqlalchemy_adapter.exception import (
     DBURLNotInitializedError,
     SessionNotInitializedError,

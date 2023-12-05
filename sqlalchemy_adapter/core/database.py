@@ -4,7 +4,7 @@ from typing import Any, Dict, Union
 from sqlalchemy import URL, Engine, make_url
 from sqlalchemy.orm import Session, sessionmaker
 
-from .exception import EngineNotInitializedError
+from ..exception import EngineNotInitializedError
 
 
 class AbstractDatabase(abc.ABC):

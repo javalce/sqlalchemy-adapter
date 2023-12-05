@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import Integer
 from sqlalchemy.orm import Mapped, clear_mappers, mapped_column
 
-from sqlalchemy_adapter.core import Database
+from sqlalchemy_adapter.database import Database
 from sqlalchemy_adapter.model import Model
 from sqlalchemy_adapter.repository import BaseRepository
 

@@ -1,6 +1,6 @@
 import pytest
 
-from sqlalchemy_adapter.abstract_database import AbstractDatabase
+from sqlalchemy_adapter.core.database import AbstractDatabase
 
 
 def test_abstract_database_cannot_be_instantiated():

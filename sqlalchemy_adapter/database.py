@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, Union
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from .abstract_database import AbstractDatabase
+from .core import AbstractDatabase
 from .exception import DBURLNotInitializedError, SessionNotInitializedError
 from .model import Model
 
